@@ -4,8 +4,7 @@
 
 This repository contains the dataset, prompt templates, and implementation details for the paper:
 
-**Bridging Human Judgments and LLMs: A Human-In-The-Loop Framework for Search Clarifications**  
-Leila Tavakoli, Hamed Zamani  
+**Bridging Human Judgments and LLMs: A Human-In-The-Loop Framework for Search Clarifications**   
 
 The paper introduces a **Human-In-The-Loop (HITL) workflow** for improving annotation quality in search clarification tasks. We evaluate multiple **Large Language Models (LLMs)** to assess their ability to replicate human judgments and propose an efficient **hybrid approach** that reduces human effort while maintaining annotation quality.
 
@@ -64,13 +63,13 @@ Run the following command:
 ## 📄 Citation  
 If you find this work useful, please cite:
 bibtex
-@inproceedings{tavakoli2025HITL,
-  author = {Tavakoli, Leila and Zamani, Hamed},
+@inproceedings{,
+  author = {},
   title = {Bridging Human Judgments and LLMs: A Human-In-The-Loop Framework for Search Clarifications},
 }
 
 ## 📬 Contact  
 
 For questions or collaboration, feel free to reach out to:  
-👩‍💻 **Leila Tavakoli** – [GitHub](https://github.com/Leila-Ta) | [LinkedIn](https://www.linkedin.com/in/leilatavakoli)
+👩‍💻 **
 "
