@@ -1,5 +1,0 @@
-Accuracy: 0.5010
-Cohen’s Kappa: 0.0737
-Pearson Correlation: 0.1726
-Average Confidence: 94.52%
-Confidence-Weighted Accuracy: 0.5118
