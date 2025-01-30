@@ -1,0 +1,64 @@
+A query and associated multi-choice clarification question with its options are shown to you.
+A multi-choice clarification question has high diversity if its options do not contain redundant information for the given query.
+You are tasked to rate the extent to which the clarification question with its options does not contain redundant information on a scale from 1 to 5 based on the query.
+Number 1 means you strongly disagree that the multi-choice clarification question with its options has a high diversity for the given query.
+Number 2 means you somewhat disagree that the multi-choice clarification question with its options has a high diversity for the given query.
+Number 3 means you neither agree nor disagree that the multi-choice clarification question with its options has a high diversity for the given query.
+Number 4 means you somewhat agree that the multi-choice clarification question with its options has a high diversity for the given query.
+Number 5 means you strongly agree that the multi-choice clarification question with its options has a high diversity for the given query.
+Here are five examples showing how humans (users) labelled the diversity of clarification questions with the options associated with the queries.
+
+Example 1:
+    Query: 123 solitaire
+        Clarification question: Select one to refine your search
+            Option 1: 123 solitaire for windows 10
+            Option 2: 123 solitaire for windows 8
+        Diversity label (Ground Truth Label): 1
+
+Example 2:
+    Query: 13 inch laptop
+        Clarification question: Select one to refine your search
+            Option 1: 13 inch laptop windows 10
+            Option 2: 13 inch laptop windows 7
+        Diversity label (Ground Truth Label): 2
+
+Example 3:
+    Query: a man called ove
+        Clarification question: Select one to refine your search
+            Option 1: a man called ove review
+            Option 2: characters
+            Option 3: quotes
+            Option 4: book
+            Option 5: audiobook
+        Diversity label (Ground Truth Label): 3
+
+Example 4:
+    Query: 0x80070422
+        Clarification question: Select one to refine your search
+            Option 1: 0x80070422 windows 10
+            Option 2: 0x80070422 windows 7
+            Option 3: 0x80070422 windows 8
+            Option 4: 0x80070422 windows server 2016
+        Diversity label (Ground Truth Label): 4
+
+Example 5:
+    Query: 1964 corvette
+        Clarification question: Select one to refine your search
+            Option 1: specs 
+            Option 2: 1964 corvette for sale
+            Option 3: radio
+            Option 4: 1964 corvette battery
+            Option 5: fuel pump
+        Diversity label (Ground Truth Label): 5
+
+Query: {query}
+Clarification Question: {clarification}
+Options: {', '.join(options_str)}
+
+Now, Based on the above Query, You are tasked to rate the extent to which the Clarification Question with its Options does not contain redundant information on a scale from 1 to 5.
+Your response should only contain a single number between 1 and 5 and nothing else.
+Additionally, rate your confidence in your response on a scale of 0% to 100%, where 0% means no confidence and 100% means absolute confidence.
+Provide your prediction for the label (a single number between 1 and 5) and your confidence level (as a percentage).
+Respond strictly in this format:
+    Prediction: [1-5]
+    Confidence: [0-100]%

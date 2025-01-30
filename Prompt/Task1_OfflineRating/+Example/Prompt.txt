@@ -1,0 +1,102 @@
+
+You are tasked with rating how likely it is that a user (human) would prefer to engage with a clarification question and its associated options for a given query compared to other clarification questions.
+The rating scale is from 1 to 5, where:
+    1: The clarification and options are very unlikely to engage the user, as they are perceived as irrelevant or useless.
+    2: The clarification and options are somewhat likely to engage the user but lack depth or strong relevance.
+    3: The clarification and options are moderately likely to engage the user, showing some relevance and usefulness.
+    4: The clarification and options are highly likely to engage the user, demonstrating strong relevance and helpfulness.
+    5: The clarification and options are exceptionally likely to engage the user, being highly relevant, clear, and useful.
+
+Below are examples of how humans (users) have rated their preferences for engaging with clarification questions and their associated options:
+
+Example 1
+    Query: 1960s music
+
+    Clarification 1: Select one to refine your search
+        Option 1: 1960s country music
+        Option 2: 1960s rock music
+        Option 3: 1960s pop music
+        Option 4: 1960s soul music
+        Option 5: 1960s surf music
+    Preference score (Ground Truth Label): 5
+
+    Clarification 2: Select one to refine your search
+        Option 1: 1960s music article
+        Option 2: 1960s music essay
+    Preference score (Ground Truth Label): 1
+
+    Clarification 3: Select one to refine your search
+        Option 1: 1960s music lyrics
+        Option 2: 1960s music genre
+        Option 3: 1960s music albums
+    Preference score (Ground Truth Label): 2
+
+    Clarification 4: Select one to refine your search
+        Option 1: 1960s music rock
+        Option 2: 1960s music jazz
+        Option 3: 1960s music country
+    Preference score (Ground Truth Label): 4
+
+    Example 2
+        Query: why is my printer offline
+
+    Clarification 1: Select one to refine your search
+        Option 1: canon printer
+        Option 2: epson printer
+        Option 3: hp printer
+        Option 4: brother printer
+        Option 5: ricoh printer
+    Preference score (Ground Truth Label): 3
+
+    Clarification 2: Select one to refine your search
+        Option 1: hp
+        Option 2: brother
+        Option 3: canon
+        Option 4: Epson
+        Option 5: why is my printer offline dell
+    Preference score (Ground Truth Label): 4
+
+    Clarification 3: Select one to refine your search
+        Option 1: hp
+        Option 2: why is my printer offline dell
+    Preference score (Ground Truth Label): 1
+
+    Clarification 4: Select one to refine your search
+        Option 1: in windows 10
+        Option 2: windows 8
+        Option 3: windows 7
+        Option 4: windows xp
+    Preference score (Ground Truth Label): 2
+
+Example 3
+    Query: how to hatch a dragon egg in minecraft
+
+    Clarification 1: Select one to refine your search
+        Option 1: minecraft pe
+        Option 2: how to hatch a dragon egg in minecraft ps3
+        Option 3: how to hatch a dragon egg in minecraft xbox
+    Preference score (Ground Truth Label): 4
+
+    Clarification 2: Select one to refine your search
+        Option 1: ps3
+        Option 2: minecraft xbox
+    Preference score (Ground Truth Label): 3
+
+    Clarification 3: Select one to refine your search
+        Option 1: ps4
+        Option 2: how to hatch a dragon egg in minecraft xbox
+    Preference score (Ground Truth Label): 3
+
+    Query: {query}
+
+    Clarification Questions and their options: {clarifications_str}
+
+    Now, Based on the above query, and Clarification Questions and their options and shown examples, rate the human preference label of each clarification and its options on a scale from 1 to 5. 
+    You can give the same label to more than one clarification question and its options if you have no preferences. 
+    Your response should only contain a single number between 1 and 5 for each clarification and its options, and nothing else. Additionally, rate your confidence in your response on a scale of 0% to 100%, where 0% means no confidence and 100% means absolute confidence. 
+    Provide your prediction for the label (a single number between 1 and 5) and your confidence level (as a percentage). 
+    Make sure you provide a Prediction and Confidence score for each Clarification Question with its Options for a given Query.
+    Respond strictly in this format:
+        Prediction: [1-5]
+        Confidence: [0-100]%
+        
