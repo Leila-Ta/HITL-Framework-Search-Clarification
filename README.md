@@ -29,45 +29,28 @@ The paper introduces a **Human-In-The-Loop (HITL) workflow** for improving annot
 
 ### 📊 **Results**
 - **`model_comparison.csv`**: Performance of LLMs across different annotation tasks.
-- **`HITL_performance_analysis.csv`**: Results from HITL system showing reduction in human effort while maintaining annotation quality.
+- **`HITL_performance_analysis.csv`**: Results from the HITL system showing a reduction in human effort while maintaining annotation quality.
 
 ---
 
 ## 🚀 How to Use
-
 ### 1️⃣ Clone the repository
-```bash
-git clone https://github.com/Leila-Ta/HITL-Framework-Search-Clarification.git
-cd HITL-Framework-Search-Clarification
-## 🚀 Installation & Usage
 
+---
 ### 2️⃣ Install Dependencies
 Ensure you have **Python 3.8+** and install the required packages:
 
-```bash
-pip install -r requirements.txt
-## 🚀 Running the HITL Framework
-
+---
 ### 3️⃣ Run LLM-Based Annotations
-Modify **`annotation_pipeline.py`** with your **OpenAI API key** and run:
+Modify **annotation_pipeline.py** with your **OpenAI API key** and run:
 
-```bash
-python annotation_pipeline.py
+---
 ## 📊 4️⃣ Evaluate Performance  
-Run the following command:  
+Run the following command:
 
-```bash
-python evaluation_metrics.py
+---
 ## 🏗️ 5️⃣ Apply the HITL Framework  
 Run the following command:  
-
-```bash
-python hitl_framework.py
-## 📜 Script Overview  
-This script:  
-- 🚩 **Flags low-confidence cases** for human review.  
-- 🔄 Uses **majority voting** across models to improve annotation consistency.  
-- ⚖️ Helps balance **automation** and **human oversight**.  
 
 ---
 
@@ -79,9 +62,8 @@ This script:
 ---
 
 ## 📄 Citation  
-If you find this work useful, please cite:  
-
-```bibtex
+If you find this work useful, please cite:
+bibtex
 @inproceedings{tavakoli2025HITL,
   author = {Tavakoli, Leila and Zamani, Hamed},
   title = {Bridging Human Judgments and LLMs: A Human-In-The-Loop Framework for Search Clarifications},
@@ -91,3 +73,4 @@ If you find this work useful, please cite:
 
 For questions or collaboration, feel free to reach out to:  
 👩‍💻 **Leila Tavakoli** – [GitHub](https://github.com/Leila-Ta) | [LinkedIn](https://www.linkedin.com/in/leilatavakoli)
+"
