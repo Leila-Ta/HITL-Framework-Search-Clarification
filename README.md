@@ -13,7 +13,7 @@ The paper introduces a **Human-In-The-Loop (HITL) workflow** for improving annot
 ## 📌 Repository Contents
 
 ### 📂 **Data**
-- **`MIMICS-Duo-HITL.csv`**: Preprocessed dataset based on the **MIMICS-Duo** dataset, annotated for preference ranking, quality assessment, and aspect labeling (coverage, diversity, option order).
+- **`MIMICS-Duo-HITL.csv`**: Preprocessed dataset based on the **MIMICS-Duo** dataset, annotated for preference ranking, quality assessment, and aspect labelling (coverage, diversity, option order).
 - **`sample_annotation_examples.json`**: Example query-clarification pairs and corresponding human labels.
 
 ### 📜 **Prompts**
@@ -33,23 +33,7 @@ The paper introduces a **Human-In-The-Loop (HITL) workflow** for improving annot
 ---
 
 ## 🚀 How to Use
-### 1️⃣ Clone the repository
-
----
-### 2️⃣ Install Dependencies
-Ensure you have **Python 3.8+** and install the required packages:
-
----
-### 3️⃣ Run LLM-Based Annotations
-Modify **annotation_pipeline.py** with your **OpenAI API key** and run:
-
----
-## 📊 4️⃣ Evaluate Performance  
-Run the following command:
-
----
-## 🏗️ 5️⃣ Apply the HITL Framework  
-Run the following command:  
+### 1️⃣ Clone the repository 
 
 ---
 
