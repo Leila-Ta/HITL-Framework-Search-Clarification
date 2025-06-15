@@ -15,7 +15,7 @@ torch.cuda.memory_summary(device=None, abbreviated=False)  # Optional: Displays 
 drive.mount('/content/drive')
 
 # Use your Hugging Face token here
-login("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")
+login("...")
 
 # Load model
 model_name = "mistralai/Mistral-7B-Instruct-v0.1"
@@ -177,8 +177,4 @@ else:
     print("Not enough valid predictions to calculate metrics.")
 
 print("*****Done(Comparing)*****")
--------------------------------------------------
-Accuracy: 0.2263
-Cohen’s Kappa: -0.0208
-Pearson Correlation: -0.0058
-Average Confidence: 80.35%
+
