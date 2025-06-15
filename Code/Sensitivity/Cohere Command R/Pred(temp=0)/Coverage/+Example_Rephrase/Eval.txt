@@ -163,9 +163,3 @@ else:
 
 print("*****Done(Comparing)*****")
 
---------------------------------------------------
-Accuracy: 0.3491
-Cohen’s Kappa: 0.0134
-Pearson Correlation: 0.2095
-Average Confidence: 93.13%
-Confidence-Weighted Accuracy: 0.3625
