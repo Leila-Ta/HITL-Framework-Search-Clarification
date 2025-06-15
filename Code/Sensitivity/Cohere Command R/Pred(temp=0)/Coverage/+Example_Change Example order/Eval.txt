@@ -19,7 +19,7 @@ options = [data['option_1'], data['option_2'], data['option_3'], data['option_4'
 print("*Done(Data Loading)")
 
 # Set up Cohere client
-API_KEY = 'EWQUf6rOHYMAF00jZm2j0abE28sjIJpPrGNDDe47'
+API_KEY = '...'
 co = cohere.Client(API_KEY)
 
 predictions = []
