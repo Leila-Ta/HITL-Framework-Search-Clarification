@@ -174,9 +174,4 @@ else:
     print("Not enough valid predictions to calculate metrics.")
 
 print("*****Done(Comparing)*****")
------------------------------------------------------------------------
-Accuracy: 0.3675
-Cohen’s Kappa: 0.0975
-Pearson Correlation: 0.3115
-Average Confidence: 85.01%
-Confidence-Weighted Accuracy: 0.3780
+
