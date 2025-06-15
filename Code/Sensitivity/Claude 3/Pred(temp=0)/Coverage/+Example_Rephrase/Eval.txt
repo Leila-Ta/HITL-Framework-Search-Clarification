@@ -16,7 +16,7 @@ options = [data['option_1'], data['option_2'], data['option_3'], data['option_4'
 print("*Done(Data Loading)")
 
 # Set up Anthropic client
-API_KEY = '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'
+API_KEY = '...'
 client = Anthropic(api_key=API_KEY)
 
 predictions = []
@@ -161,9 +161,4 @@ else:
     print("Not enough valid predictions to calculate metrics.")
 
 print("*****Done(Comparing)*****")
------------------------------------------------------
-Accuracy: 0.3114
-Cohen’s Kappa: 0.0698
-Pearson Correlation: 0.3429
-Average Confidence: 83.08%
-Confidence-Weighted Accuracy: 0.3218
+
