@@ -1,0 +1,145 @@
+import time
+import pandas as pd
+import openai
+import re
+from sklearn.metrics import accuracy_score, cohen_kappa_score
+from scipy.stats import pearsonr
+
+# Load the MIMICS-Duo dataset
+data = pd.read_csv('.../DataSet/Task1-OfflineRating.csv')
+
+queries = data['query']
+clarifications = data['question']
+labels = data['offline rating']  # This is for comparison after GPT-4 predicts
+
+options = [data['option_1'], data['option_2'], data['option_3'], data['option_4'], data['option_5']]
+print("*Done(Data Loading)")
+
+# Set your OpenAI API key
+openai.api_key = '...'
+
+predictions = []
+confidences = []
+true_labels = []
+
+# Group by queries to process all clarifications for a given query together
+grouped_data = data.groupby("query")
+
+for query, group in grouped_data:
+    clarifications = group["question"].tolist()
+    options_list = [
+        [group.iloc[i][f"option_{j + 1}"] for j in range(5) if pd.notna(group.iloc[i][f"option_{j + 1}"])]
+        for i in range(len(group))
+    ]
+    ground_truth = group["offline rating"].tolist()
+    true_labels.extend(ground_truth)
+
+    # Build the prompt
+    clarifications_str = ""
+    for idx, (clarification, options) in enumerate(zip(clarifications, options_list)):
+        options_str = ", ".join(options)
+        clarifications_str += (
+            f"Clarification {idx + 1}: {clarification}\n"
+            f"Options: {options_str}\n"
+        )
+
+    input_prompt = f"""
+
+    You are tasked with rating how likely it is that a user (human) would prefer to engage with a clarification question and its associated options for a given query, compared to other clarification questions.
+    The rating scale is from 1 to 5, where:
+
+    1: The clarification and options are very unlikely to engage the user, as they are perceived as irrelevant or useless.
+    2: The clarification and options are somewhat likely to engage the user but lack depth or strong relevance.
+    3: The clarification and options are moderately likely to engage the user, showing some relevance and usefulness.
+    4: The clarification and options are highly likely to engage the user, demonstrating strong relevance and helpfulness.
+    5: The clarification and options are exceptionally likely to engage the user, being highly relevant, clear, and useful.
+
+
+    Query: {query}
+
+    Clarification Questions and their options: {clarifications_str}
+
+    Now, Based on the above query, and Clarification Questions and their options and shown examples, rate the human preference label of each clarification and its options
+    on a scale from 1 to 5. You can give the same label to more than one clarification question and its options if you have no preferences. 
+    Your response should only contain a single number between 1 and 5 for each clarification and its options, and nothing else.
+    Additionally, rate your confidence in your response on a scale of 0% to 100%, where 0% means no confidence and 100% means absolute confidence.
+    provide your prediction for the label (a single number between 1 and 5) and your confidence level (as a percentage).
+    Make sure you provide Prediction and Confidence score for each Clarification Question with its Options for a given Query.
+    Respond strictly in this format:
+    Prediction: [1-5]
+    Confidence: [0-100]%
+     """
+
+    try:
+        # Use GPT-4 to get the predicted label
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "user", "content": input_prompt}
+            ],
+            max_tokens=300,
+            temperature=0,
+        )
+
+        # Extract response text
+        raw_response = response['choices'][0]['message']['content'].strip()
+        print(f"Raw Response Content for Query '{query}':\n{raw_response}")
+
+        # Extract predictions and confidences
+        clarification_matches = re.findall(r'Prediction:\s*([1-5])\s*Confidence:\s*(\d+)%', raw_response)
+        for prediction, confidence in clarification_matches:
+            predictions.append(int(prediction))
+            confidences.append(int(confidence))
+
+    except Exception as e:
+        print(f"Error for query '{query}': {str(e)}")
+        predictions.extend([None] * len(clarifications))
+        confidences.extend([None] * len(clarifications))
+
+print("**Done(Prediction)**")
+
+# Filter out invalid predictions and confidences
+valid_indices = [i for i, p in enumerate(predictions) if p is not None]
+filtered_predictions = [predictions[i] for i in valid_indices]
+filtered_confidences = [confidences[i] for i in valid_indices]
+filtered_true_labels = [true_labels[i] for i in valid_indices]
+
+print("Predictions:")
+print(predictions)
+print("confidences:")
+print(confidences)
+
+# Calculate metrics
+if len(filtered_true_labels) > 0:
+    # Accuracy
+    accuracy = accuracy_score(filtered_true_labels, filtered_predictions)
+    print(f"Accuracy: {accuracy:.4f}")
+
+    # Cohen's Kappa
+    kappa = cohen_kappa_score(filtered_true_labels, filtered_predictions)
+    print(f"Cohen’s Kappa: {kappa:.4f}")
+
+    # Pearson Correlation
+    if len(filtered_true_labels) > 1:
+        correlation = pearsonr(filtered_true_labels, filtered_predictions)[0]
+        print(f"Pearson Correlation: {correlation:.4f}")
+    else:
+        print("Not enough data points to calculate Pearson correlation.")
+
+    # Average Confidence
+    avg_confidence = sum(filtered_confidences) / len(filtered_confidences)
+    print(f"Average Confidence: {avg_confidence:.2f}%")
+
+    # Confidence-Weighted Accuracy
+    weighted_correctness = sum(
+        (filtered_predictions[i] == filtered_true_labels[i]) * (filtered_confidences[i] / 100)
+        for i in range(len(filtered_predictions))
+    )
+    total_weights = sum(filtered_confidences[i] / 100 for i in range(len(filtered_confidences)))
+    confidence_weighted_accuracy = weighted_correctness / total_weights if total_weights > 0 else 0
+    print(f"Confidence-Weighted Accuracy: {confidence_weighted_accuracy:.4f}")
+else:
+    print("Not enough valid predictions to calculate metrics.")
+
+print("*****Done(Comparing)*****")
+
