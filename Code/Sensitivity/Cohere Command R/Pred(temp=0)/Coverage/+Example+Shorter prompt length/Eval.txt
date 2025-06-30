@@ -1,33 +1,37 @@
-import time
 import pandas as pd
-import openai
+import cohere
 import re
 from sklearn.metrics import accuracy_score, cohen_kappa_score
 from scipy.stats import pearsonr
+import time
 
 # Load the MIMICS-Duo dataset
-data = pd.read_csv('.../New Research/DataSet/Task3-AspectLabelling.csv')
+data = pd.read_csv('.../DataSet/Task3-AspectLabelling.csv')
+
+# Take just first 5 samples for testing (you can adjust this for a full run)
+# data = data.head(5)
 
 queries = data['query']
 clarifications = data['question']
-labels = data['Coverage']  # This is for comparison after GPT-4 predicts
-
+labels = data['Coverage']
+# options = [data['option_1']]
 options = [data['option_1'], data['option_2'], data['option_3'], data['option_4'], data['option_5']]
 print("*Done(Data Loading)")
 
-# Set your OpenAI API key
-openai.api_key = '...'
+# Set up Cohere client
+API_KEY = '...'
+co = cohere.Client(API_KEY)
 
 predictions = []
 confidences = []
 querylist = []
 
-# Prepare a sample input for GPT-4
+# Prepare input for Cohere Command R
 for idx, (query, clarification, *options_row) in enumerate(zip(queries, clarifications, *options)):
     # Construct input prompt for Cohere Command R
     options_str = [str(option) if pd.notna(option) else '' for option in options_row]
-    input_prompt = f"""
 
+    input_prompt = f"""
 A query and its associated multi-choice clarification question with options are shown below. A clarification question has high coverage if its options address every potential aspect of the query. Rate the coverage on a scale from 1 to 5:
 
 1: Strongly disagree (low coverage)
@@ -74,22 +78,19 @@ Confidence: Percentage (0%-100%)
 Respond in this format:
 Prediction: [1-5]
 Confidence: [0-100]%
-
          """
 
     try:
-        # Use GPT-4 to get the predicted label
-        response = openai.ChatCompletion.create(
-            model="gpt-4o",  # Assuming "gpt-4" is available in the OpenAI API. You can also use "gpt-3.5-turbo"
-            messages=[
-                {"role": "user", "content": input_prompt}
-            ],
+        # Make the API request to get a response from Cohere
+        response = co.generate(
+            model='command-xlarge',
+            prompt=input_prompt,
             max_tokens=1000,
             temperature=0,
         )
 
         # Extract response text
-        raw_response = response['choices'][0]['message']['content'].strip()
+        raw_response = response.generations[0].text.strip()
         print(f"Raw Response Content for Prompt {idx + 1}: {raw_response}")
 
         # Extract response content
@@ -105,7 +106,6 @@ Confidence: [0-100]%
 
         print(f"Predicted Label for Prompt {idx + 1}: {predicted_label}")
         print(f"Confidence Level for Prompt {idx + 1}: {confidence}%")
-        time.sleep(1)
 
     except Exception as e:
         # Handle failed API call

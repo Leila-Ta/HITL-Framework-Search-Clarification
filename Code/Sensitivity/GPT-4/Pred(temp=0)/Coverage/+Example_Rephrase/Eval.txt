@@ -6,7 +6,7 @@ from sklearn.metrics import accuracy_score, cohen_kappa_score
 from scipy.stats import pearsonr
 
 # Load the MIMICS-Duo dataset
-data = pd.read_csv('/New Research/DataSet/Task3-AspectLabelling.csv')
+data = pd.read_csv('.../DataSet/Task3-AspectLabelling.csv')
 
 queries = data['query']
 clarifications = data['question']
@@ -16,7 +16,7 @@ options = [data['option_1'], data['option_2'], data['option_3'], data['option_4'
 print("*Done(Data Loading)")
 
 # Set your OpenAI API key
-openai.api_key = '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'
+openai.api_key = '...'
 
 predictions = []
 confidences = []
@@ -161,4 +161,5 @@ else:
     print("Not enough valid predictions to calculate metrics.")
 
 print("*****Done(Comparing)*****")
+
 
