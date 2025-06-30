@@ -1,0 +1,18 @@
+A query and associated multi-choice clarification question with its options are shown to you. A multi-choice clarification question has high diversity if its options do not contain redundant information for the given query. You are tasked to rate the extent to which the clarification question with its options does not contain redundant information on a scale from 1 to 5 based on the query. 
+Number 1 means you strongly disagree that the multi-choice clarification question with its options has a high diversity for the given query.
+Number 2 means you somewhat disagree that the multi-choice clarification question with its options has a high diversity for the given query.
+Number 3 means you neither agree nor disagree that the multi-choice clarification question with its options has a high diversity for the given query.
+Number 4 means you somewhat agree that the multi-choice clarification question with its options has a high diversity for the given query.
+Number 5 means you strongly agree that the multi-choice clarification question with its options has a high diversity for the given query.
+
+Query: {query}
+Clarification Question: {clarification}
+Options: {', '.join(options_str)}
+
+Now, Based on the above Query, You are tasked to rate the extent to which the Clarification Question with its Options does not contain redundant information on a scale from 1 to 5.
+Your response should only contain a single number between 1 and 5 and nothing else.
+Additionally, rate your confidence in your response on a scale of 0% to 100%, where 0% means no confidence and 100% means absolute confidence.
+Provide your prediction for the label (a single number between 1 and 5) and your confidence level (as a percentage).
+Respond strictly in this format:
+    Prediction: [1-5]
+    Confidence: [0-100]%
