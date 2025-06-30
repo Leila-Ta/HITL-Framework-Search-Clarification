@@ -1,0 +1,216 @@
+import time
+import pandas as pd
+import re
+from sklearn.metrics import accuracy_score, cohen_kappa_score
+from scipy.stats import pearsonr
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
+from huggingface_hub import login
+import openai
+from google.colab import drive
+import torch
+
+torch.cuda.empty_cache()
+torch.cuda.memory_summary(device=None, abbreviated=False)  # Optional: Displays memory status
+
+
+drive.mount('/content/drive')
+
+# Use your Hugging Face token here
+login("...")
+
+# Load model with memory optimization
+model_name = "mistralai/Mistral-7B-Instruct-v0.1"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+tokenizer.pad_token = tokenizer.eos_token
+model = AutoModelForCausalLM.from_pretrained(
+    model_name,
+    low_cpu_mem_usage=True,
+    device_map="auto"  # Offload model across CPU and GPU
+).half()
+
+# Disable gradients (inference only)
+torch.set_grad_enabled(False)
+
+# Create generator pipeline
+generator = pipeline(
+    "text-generation",
+    model=model,
+    tokenizer=tokenizer,
+    max_new_tokens=2000,
+    temperature=0.5,
+    do_sample=True,
+    truncation=True
+)
+
+
+# Clear cache
+torch.cuda.empty_cache()
+
+# Load the MIMICS-Duo dataset
+data = pd.read_csv('/content/drive/My Drive/New Research/DataSet/Task2-QualityLabelling.csv')
+
+queries = data['query']
+clarifications = data['question']
+labels = data['OverallClarificationPaneQuality']  # This is for comparison after GPT-4 predicts
+
+options = [data['option_1'], data['option_2'], data['option_3'], data['option_4'], data['option_5']]
+print("*Done(Data Loading)")
+
+# Set your OpenAI API key
+openai.api_key = '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'
+
+predictions = []
+confidences = []
+true_labels = []
+querylist = []
+
+# Prepare a sample input for GPT-4
+for idx, (query, clarification, *options_row) in enumerate(zip(queries, clarifications, *options)):
+    # Construct input prompt for Cohere Command R
+    options_str = [str(option) if pd.notna(option) else '' for option in options_row]
+
+    input_prompt = f"""
+
+     A query and associated multi-choice clarification question with its options are shown to you. Based on the query, I want to ask you rate the overall quality of the clarification question and its options on a scale from 1 to 5. 
+     Your response should only contain a single number between 1 and 5. Number one means very bad quality, number 2 means bad quality, number 3 means fair quality, number 4 means good quality and number 5 means very good quality. 
+     Here are five examples showing how humans (users) labelled the overall quality of clarification questions associated with the queries.
+
+     Example 1:
+     Query: 2 wheeler insurance
+     Clarification question: Select one to refine your search
+     Option 1: bharti axa
+     Option 2: hdfc
+     Option 3: bajaj allianz
+     Option 4: icici lombard
+     Quality label (Ground Truth Label): 1
+
+     Example 2:
+     Query: 1 samuel 1
+     Clarification question: Select one to refine your search
+     Option 1: kjv
+     Option 2: nlt
+     Option 3: esv
+     Option 4: niv
+     Option 5: nasb
+     Quality label (Ground Truth Label): 2
+
+     Example 3:
+     Query: 12 gauge shotgun
+     Clarification question: Select one to refine your search
+     Option 1: bolt action
+     Option 2: lever action
+     Option 3: single shot
+     Quality label (Ground Truth Label): 3
+
+     Example 4:
+     Query: 123 watch free movies online
+     Clarification question: Select one to refine your search
+     Option 1: 123 watch free english movies online
+     Option 2: action movies
+     Option 3: comedy movies
+     Option 4: horror movies
+     Option 5: drama movies
+     Quality label (Ground Truth Label): 4
+
+     Example 5:
+     Query: 20 questions game
+     Clarification question: Select one to refine your search
+     Option 1: for couples
+     Option 2: for friends
+     Option 3: for kids
+     Option 4: for teens
+     Option 5: for seniors
+     Quality label (Ground Truth Label): 5
+
+     Query: {query}
+     Clarification Question: {clarification}
+     Options: {', '.join(options_str)}
+
+     Now, Based on the above Query, I want to ask you rate the quality of the Clarification Question and its Options on a scale from 1 to 5. 
+     Your response should only contain a single number between 1 and 5 and nothing else.
+     Additionally, rate your confidence in your response on a scale of 0% to 100%, where 0% means no confidence and 100% means absolute confidence.
+     provide your prediction for the label (a single number between 1 and 5) and your confidence level (as a percentage).
+     Respond strictly in this format:
+     Prediction: [1-5]
+     Confidence: [0-100]%
+      """
+
+    try:
+        # Generate predictions using Mistral
+        response = generator(
+            input_prompt,
+            max_length=2000,         # Maximum length of the generated text
+            num_return_sequences=1,  # Number of output sequences
+        )
+
+        # Extract response text
+        raw_response = response[0]['generated_text']
+        print(f"Raw Response Content for Query '{query}':\n{raw_response}")
+
+        # Extract response content
+        match_prediction = re.search(r'Prediction:\s*([1-5])', raw_response)
+        match_confidence = re.search(r'Confidence:\s*(\d+)%', raw_response)
+
+        predicted_label = int(match_prediction.group(1)) if match_prediction else None
+        confidence = int(match_confidence.group(1)) if match_confidence else None
+
+        predictions.append(predicted_label)
+        confidences.append(confidence)
+        querylist.append(query)
+        true_labels.append(labels[idx])  # Append the corresponding true label
+
+    except Exception as e:
+        print(f"Error for query '{query}': {str(e)}")
+        predictions.extend([None])
+        confidences.extend([None])
+        true_labels.append(None)  # Append None to true_labels for consistency
+
+
+print("**Done(Prediction)**")
+
+# Filter out invalid predictions and confidences
+valid_indices = [i for i, p in enumerate(predictions) if p is not None]
+filtered_predictions = [predictions[i] for i in valid_indices]
+filtered_confidences = [confidences[i] for i in valid_indices]
+filtered_true_labels = [true_labels[i] for i in valid_indices]
+
+print("Predictions:")
+print(predictions)
+print("Confidences:")
+print(confidences)
+print(querylist)
+
+# Calculate metrics
+if len(filtered_true_labels) > 0:
+    # Accuracy
+    accuracy = accuracy_score(filtered_true_labels, filtered_predictions)
+    print(f"Accuracy: {accuracy:.4f}")
+
+    # Cohen's Kappa
+    kappa = cohen_kappa_score(filtered_true_labels, filtered_predictions)
+    print(f"Cohen’s Kappa: {kappa:.4f}")
+
+    # Pearson Correlation
+    if len(filtered_true_labels) > 1:
+        correlation = pearsonr(filtered_true_labels, filtered_predictions)[0]
+        print(f"Pearson Correlation: {correlation:.4f}")
+    else:
+        print("Not enough data points to calculate Pearson correlation.")
+
+    # Average Confidence
+    avg_confidence = sum(filtered_confidences) / len(filtered_confidences)
+    print(f"Average Confidence: {avg_confidence:.2f}%")
+
+    # Confidence-Weighted Accuracy
+    weighted_correctness = sum(
+        (filtered_predictions[i] == filtered_true_labels[i]) * (filtered_confidences[i] / 100)
+        for i in range(len(filtered_predictions))
+    )
+    total_weights = sum(filtered_confidences[i] / 100 for i in range(len(filtered_confidences)))
+    confidence_weighted_accuracy = weighted_correctness / total_weights if total_weights > 0 else 0
+    print(f"Confidence-Weighted Accuracy: {confidence_weighted_accuracy:.4f}")
+else:
+    print("Not enough valid predictions to calculate metrics.")
+
+print("*****Done(Comparing)*****")
+
