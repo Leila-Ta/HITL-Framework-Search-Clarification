@@ -16,7 +16,7 @@ torch.cuda.memory_summary(device=None, abbreviated=False)  # Optional: Displays 
 drive.mount('/content/drive')
 
 # Use your Hugging Face token here
-login("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")
+login("...")
 
 # Load model with memory optimization
 model_name = "mistralai/Mistral-7B-Instruct-v0.1"

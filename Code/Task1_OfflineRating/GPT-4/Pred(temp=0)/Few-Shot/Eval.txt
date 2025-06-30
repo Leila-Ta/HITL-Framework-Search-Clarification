@@ -1,53 +1,12 @@
 import time
 import pandas as pd
+import openai
 import re
 from sklearn.metrics import accuracy_score, cohen_kappa_score
 from scipy.stats import pearsonr
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
-from huggingface_hub import login
-import openai
-from google.colab import drive
-import torch
-
-torch.cuda.empty_cache()
-torch.cuda.memory_summary(device=None, abbreviated=False)  # Optional: Displays memory status
-
-
-drive.mount('/content/drive')
-
-# Use your Hugging Face token here
-login("...")
-
-# Load model with memory optimization
-model_name = "mistralai/Mistral-7B-Instruct-v0.1"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-tokenizer.pad_token = tokenizer.eos_token
-model = AutoModelForCausalLM.from_pretrained(
-    model_name,
-    low_cpu_mem_usage=True,
-    device_map="auto"  # Offload model across CPU and GPU
-).half()
-
-# Disable gradients (inference only)
-torch.set_grad_enabled(False)
-
-# Create generator pipeline
-generator = pipeline(
-    "text-generation",
-    model=model,
-    tokenizer=tokenizer,
-    max_new_tokens=2000,
-    temperature=1,
-    do_sample=True,
-    truncation=True
-)
-
-
-# Clear cache
-torch.cuda.empty_cache()
 
 # Load the MIMICS-Duo dataset
-data = pd.read_csv('/content/drive/My Drive/New Research/DataSet/Task1-OfflineRating.csv')
+data = pd.read_csv('.../DataSet/Task1-OfflineRating.csv')
 
 queries = data['query']
 clarifications = data['question']
@@ -57,12 +16,11 @@ options = [data['option_1'], data['option_2'], data['option_3'], data['option_4'
 print("*Done(Data Loading)")
 
 # Set your OpenAI API key
-openai.api_key = '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'
+openai.api_key = '...'
 
 predictions = []
 confidences = []
 true_labels = []
-querylist = []
 
 # Group by queries to process all clarifications for a given query together
 grouped_data = data.groupby("query")
@@ -84,7 +42,6 @@ for query, group in grouped_data:
             f"Clarification {idx + 1}: {clarification}\n"
             f"Options: {options_str}\n"
         )
-
 
     input_prompt = f"""
 
@@ -192,17 +149,19 @@ for query, group in grouped_data:
     Confidence: [0-100]%
      """
 
-
-
     try:
-        # Generate predictions using Mistral
-        response = generator(
-            input_prompt,
-            max_length=2000,         # Maximum length of the generated text
-            num_return_sequences=1,  # Number of output sequences
+        # Use GPT-4 to get the predicted label
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "user", "content": input_prompt}
+            ],
+            max_tokens=300,
+            temperature=0,
         )
 
-        raw_response = response[0]['generated_text']
+        # Extract response text
+        raw_response = response['choices'][0]['message']['content'].strip()
         print(f"Raw Response Content for Query '{query}':\n{raw_response}")
 
         # Extract predictions and confidences
@@ -210,15 +169,11 @@ for query, group in grouped_data:
         for prediction, confidence in clarification_matches:
             predictions.append(int(prediction))
             confidences.append(int(confidence))
-            querylist.append(query)
-            true_labels.append(labels[idx])  # Append the corresponding true label
 
     except Exception as e:
         print(f"Error for query '{query}': {str(e)}")
-        predictions.extend([None])
-        confidences.extend([None])
-        true_labels.append(None)  # Append None to true_labels for consistency
-
+        predictions.extend([None] * len(clarifications))
+        confidences.extend([None] * len(clarifications))
 
 print("**Done(Prediction)**")
 
@@ -230,9 +185,8 @@ filtered_true_labels = [true_labels[i] for i in valid_indices]
 
 print("Predictions:")
 print(predictions)
-print("Confidences:")
+print("confidences:")
 print(confidences)
-print(querylist)
 
 # Calculate metrics
 if len(filtered_true_labels) > 0:
